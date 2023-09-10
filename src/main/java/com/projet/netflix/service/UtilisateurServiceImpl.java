@@ -1,7 +1,9 @@
 package com.projet.netflix.service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.ArrayList;
 
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
@@ -18,6 +20,8 @@ import com.projet.netflix.repos.RoleRepository;
 import com.projet.netflix.repos.SessionRepository;
 import com.projet.netflix.repos.UtilisateurRepository;
 import com.projet.netflix.dto.SessionDTO;
+import com.projet.netflix.entities.ERole;
+import com.projet.netflix.entities.Role;
 import com.projet.netflix.entities.Session;
 
 //@Transactional
@@ -42,32 +46,42 @@ public class UtilisateurServiceImpl implements UtilisateurService{
 
 	
 	
-    @Override
-    public UtilisateurDTO saveUtilisateur(UtilisateurDTO u) {
-        // Convertir le DTO en entité
-        Utilisateur utilisateur = convertDtoToEntity(u);
+	@Override
+	public UtilisateurDTO saveUtilisateur(UtilisateurDTO u) {
+	    // Convertir le DTO en entité
+	    Utilisateur utilisateur = convertDtoToEntity(u);
 
-        // Modifier le mot de passe
-        utilisateur.setMotDePasse(bCryptPasswordEncoder.encode(utilisateur.getMotDePasse()));
+	    // Vérifier si l'email est déjà utilisé
+	    if (utilisateurRepository.findByEmail(utilisateur.getEmail()).isPresent()) {
+	        throw new RuntimeException("Email déjà utilisé!");
+	    }
 
-        // Sauvegarder l'utilisateur
-        Utilisateur savedUtilisateur = utilisateurRepository.save(utilisateur);
+	    // Modifier le mot de passe
+	    utilisateur.setMotDePasse(bCryptPasswordEncoder.encode(utilisateur.getMotDePasse()));
 
-        // Créer une nouvelle instance de Session
-        Session newSession = new Session();
-        
-        // Définir le nom de la session avec le prénom de l'utilisateur
-        newSession.setNomSession(savedUtilisateur.getPrenomUtilisateur());
-        
-        // Associer la session à l'utilisateur sauvegardé
-        newSession.setUtilisateur(savedUtilisateur);
-        
-        // Sauvegarder la session dans la base de données
-        sessionRepository.save(newSession);
-        
-        // Convertir l'entité utilisateur en DTO pour le retour
-        return convertEntityToDto(savedUtilisateur);
-    }
+	    // Attribuer un rôle par défaut à l'utilisateur
+	    Role userRole = roleRep.findByName(ERole.ROLE_USER)
+	            .orElseThrow(() -> new RuntimeException("Erreur : Rôle non trouvé."));
+	    utilisateur.setRoles(new ArrayList<>(Collections.singleton(userRole)));
+
+	    // Sauvegarder l'utilisateur
+	    Utilisateur savedUtilisateur = utilisateurRepository.save(utilisateur);
+
+	    // Créer une nouvelle instance de Session
+	    Session newSession = new Session();
+
+	    // Définir le nom de la session avec le prénom de l'utilisateur
+	    newSession.setNomSession(savedUtilisateur.getPrenomUtilisateur());
+
+	    // Associer la session à l'utilisateur sauvegardé
+	    newSession.setUtilisateur(savedUtilisateur);
+
+	    // Sauvegarder la session dans la base de données
+	    sessionRepository.save(newSession);
+
+	    // Convertir l'entité utilisateur en DTO pour le retour
+	    return convertEntityToDto(savedUtilisateur);
+	}
 //    @Override
 //    public UtilisateurDTO saveUtilisateur(UtilisateurDTO u) {
 //        // Convertir le DTO en entité et sauvegarder l'utilisateur
