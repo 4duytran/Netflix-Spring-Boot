@@ -16,6 +16,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.oauth2.server.resource.OAuth2ResourceServerConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -35,7 +36,7 @@ import lombok.RequiredArgsConstructor;
 @EnableWebSecurity
 public class SecurityConfig {
 
-
+	
     private final UserDetailsService userDetailsService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final JwtAuthorizationFilter jwtAuthorizationFilter;
@@ -47,6 +48,7 @@ public class SecurityConfig {
     }
 
 
+    // SUPP UNE DES 2 en haut en bas
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -68,13 +70,20 @@ public class SecurityConfig {
 	      .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler()))
 	        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 	        .authorizeHttpRequests(auth -> 
-	          auth.requestMatchers("/netflix/api/public/**").permitAll()
+	          auth.requestMatchers("/netflix/api/public/signup**").permitAll()
 	              .requestMatchers("/netflix/api/**").permitAll()
 	              .anyRequest().authenticated()
 	        )
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-        .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class);
-	    
+        .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class)
+        .logout(logout -> 
+        logout
+        .logoutUrl("/netflix/api/public/logout")
+        .logoutSuccessHandler((request, response, authentication) -> {
+            SecurityContextHolder.clearContext();
+            response.setStatus(HttpServletResponse.SC_OK);
+        })
+    );
 	  //http.authenticationProvider(authenticationProvider());
 	    return http.build();
 	  }	

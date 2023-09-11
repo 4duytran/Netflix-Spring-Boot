@@ -10,6 +10,8 @@ import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,7 +28,7 @@ import com.projet.netflix.entities.Session;
 
 //@Transactional
 @Service
-public class UtilisateurServiceImpl implements UtilisateurService{
+public class UtilisateurServiceImpl implements UtilisateurService,UserDetailsService{
 	
 	@Autowired
 	UtilisateurRepository utilisateurRepository;
@@ -44,7 +46,14 @@ public class UtilisateurServiceImpl implements UtilisateurService{
     private BCryptPasswordEncoder bCryptPasswordEncoder;
 	
 
-	
+	  @Override
+	  @Transactional
+	  public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+	    Utilisateur user = utilisateurRepository.findByEmail(email)
+	        .orElseThrow(() -> new UsernameNotFoundException("User Not Found with username: " + email));
+
+	    return UserDetailsImpl.build(user);
+	  }
 	
 	@Override
 	public UtilisateurDTO saveUtilisateur(UtilisateurDTO u) {

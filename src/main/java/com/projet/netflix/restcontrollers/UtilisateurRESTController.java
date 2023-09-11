@@ -3,8 +3,11 @@ package com.projet.netflix.restcontrollers;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -23,6 +26,18 @@ public class UtilisateurRESTController {
 	@Autowired
 	UtilisateurService utilisateurService;
 
+	
+    @PostMapping("/signup")
+    public ResponseEntity<UtilisateurDTO> registerUser(@RequestBody UtilisateurDTO utilisateurDTO) {
+        try {
+            UtilisateurDTO savedUser = utilisateurService.saveUtilisateur(utilisateurDTO);
+            return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+	
 	@RequestMapping(method=RequestMethod.GET)
 	List<UtilisateurDTO> getAllUtilisateurs()
 	{

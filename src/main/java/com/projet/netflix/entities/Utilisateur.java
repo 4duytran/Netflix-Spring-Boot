@@ -42,6 +42,9 @@ public class Utilisateur {
 		    @Email // Doit avoir la forme d'une adresse email
 		    private String email;
 		    
+		    @NonNull
+		    private String username;
+		    
 		    @NonNull // Lombok
 		    // Contraintes de taille
 		    @Size(min = 6, max = 32)
