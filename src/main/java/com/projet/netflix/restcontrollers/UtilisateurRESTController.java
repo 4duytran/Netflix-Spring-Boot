@@ -21,6 +21,7 @@ import com.projet.netflix.service.UtilisateurService;
 @RestController
 @RequestMapping("/rest")
 @CrossOrigin(origins = "http://localhost:4200")
+
 public class UtilisateurRESTController {
 	
 	@Autowired

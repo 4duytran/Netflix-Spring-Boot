@@ -46,15 +46,15 @@ public class UtilisateurServiceImpl implements UtilisateurService,UserDetailsSer
     private BCryptPasswordEncoder bCryptPasswordEncoder;
 	
 
-	  @Override
-	  @Transactional
-	  public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-	    Utilisateur user = utilisateurRepository.findByEmail(email)
-	        .orElseThrow(() -> new UsernameNotFoundException("User Not Found with username: " + email));
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        Utilisateur utilisateur = utilisateurRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User Not Found with email: " + email));
 
-	    return UserDetailsImpl.build(user);
-	  }
-	
+        return utilisateur;
+    }
+
+	  
 	@Override
 	public UtilisateurDTO saveUtilisateur(UtilisateurDTO u) {
 	    // Convertir le DTO en entité

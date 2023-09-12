@@ -13,15 +13,16 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
+@Component
 public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
 
     private final UserDetailsService userDetailsService;
     
-    @Value("${app.jwtSecret}")
-    private String jwtSecret;
+
 
     public JwtAuthorizationFilter(AuthenticationManager authenticationManager, UserDetailsService userDetailsService) {
         super(authenticationManager);
@@ -32,7 +33,7 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
         String header = request.getHeader("Authorization");
 
-        if (header == null || !header.startsWith("Bearer ")) {
+        if (header == null || !header.startsWith(SecurityParams.PREFIX)) {
             chain.doFilter(request, response);
             return;
         }
@@ -46,8 +47,8 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
         String token = request.getHeader("Authorization");
         if (token != null) {
             String user = Jwts.parser()
-                    .setSigningKey(jwtSecret.getBytes())
-                    .parseClaimsJws(token.replace("Bearer ", ""))
+                    .setSigningKey(SecurityParams.SECRET.getBytes())
+                    .parseClaimsJws(token.replace(SecurityParams.PREFIX, ""))
                     .getBody()
                     .getSubject();
 
