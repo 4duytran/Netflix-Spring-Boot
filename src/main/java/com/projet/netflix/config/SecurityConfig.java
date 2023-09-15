@@ -26,9 +26,9 @@ import jakarta.servlet.http.HttpServletResponse;
 @EnableWebSecurity
 public class SecurityConfig {
 
-	
-    private final UserDetailsService userDetailsService;
+    @Autowired //Test : The dependencies of some of the beans in the application context form a cycle:
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final UserDetailsService userDetailsService;
     private final JwtAuthorizationFilter jwtAuthorizationFilter;
     
     
