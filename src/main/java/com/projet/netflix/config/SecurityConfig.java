@@ -69,15 +69,8 @@ public class SecurityConfig {
 	              .anyRequest().authenticated()
 	        )
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-        .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class)
-        .logout(logout -> 
-        logout
-        .logoutUrl("/netflix/api/public/logout")
-        .logoutSuccessHandler((request, response, authentication) -> {
-            SecurityContextHolder.clearContext();
-            response.setStatus(HttpServletResponse.SC_OK);
-        })
-    );
+        .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class);
+
 	  //http.authenticationProvider(authenticationProvider());
 	    return http.build();
 	  }	
