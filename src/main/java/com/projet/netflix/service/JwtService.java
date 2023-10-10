@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -20,11 +21,12 @@ import io.jsonwebtoken.security.Keys;
 @Service
 public class JwtService {
 
-  @Value("${token.secret.key}")
-  String jwtSecretKey;
+ //@Value("${token.secret.key}")
+  String jwtSecretKey = "48a868a4042f634ac04a117f00a87202131dd7c46c4b32c4acb3edc5e15f4511";
+ // @Value("${token.expirationms}")
+  Long jwtExpirationMs = 3600000L;
+  
 
-  @Value("${token.expirationms}")
-  Long jwtExpirationMs;
 
   public String extractUserName(String token) {
       return extractClaim(token, Claims::getSubject);
