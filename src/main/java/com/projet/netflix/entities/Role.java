@@ -11,14 +11,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 
-@Data @NoArgsConstructor @AllArgsConstructor
-@Entity
-public class Role {
-	
-	@Id
-	@GeneratedValue (strategy=GenerationType.IDENTITY)
-	private Long role_id;
-	
-    @Enumerated(EnumType.STRING)
-    private ERole name;
+public enum Role {
+    ROLE_USER,
+    ROLE_ADMIN
 }

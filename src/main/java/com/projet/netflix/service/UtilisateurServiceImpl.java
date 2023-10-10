@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
@@ -18,11 +19,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.projet.netflix.dto.UtilisateurDTO;
 import com.projet.netflix.entities.Utilisateur;
-import com.projet.netflix.repos.RoleRepository;
 import com.projet.netflix.repos.SessionRepository;
 import com.projet.netflix.repos.UtilisateurRepository;
 import com.projet.netflix.dto.SessionDTO;
-import com.projet.netflix.entities.ERole;
 import com.projet.netflix.entities.Role;
 import com.projet.netflix.entities.Session;
 
@@ -36,8 +35,6 @@ public class UtilisateurServiceImpl implements UtilisateurService,UserDetailsSer
 	@Autowired
 	SessionRepository sessionRepository;
 	
-	@Autowired
-	RoleRepository roleRep;
 	
 	@Autowired
 	ModelMapper modelMapper;
@@ -46,19 +43,26 @@ public class UtilisateurServiceImpl implements UtilisateurService,UserDetailsSer
     private BCryptPasswordEncoder bCryptPasswordEncoder;
 	
 
-    @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        Utilisateur utilisateur = utilisateurRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User Not Found with email: " + email));
-
-        return utilisateur;
-    }
+	  public UserDetailsService userDetailsService() {
+	      return new UserDetailsService() {
+	          @Override
+	          public UserDetails loadUserByUsername(String username) {
+	              return utilisateurRepository.findByEmail(username)
+	                      .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+	          }
+	      };
+	  }
+	  
+      @Override
+      public UserDetails loadUserByUsername(String username) {
+          return utilisateurRepository.findByEmail(username)
+                  .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+      }
 
 	  
 	@Override
-	public UtilisateurDTO saveUtilisateur(UtilisateurDTO u) {
-	    // Convertir le DTO en entité
-	    Utilisateur utilisateur = convertDtoToEntity(u);
+	public Utilisateur saveUtilisateur(Utilisateur utilisateur) {
+	   
 
 	    // Vérifier si l'email est déjà utilisé
 	    if (utilisateurRepository.findByEmail(utilisateur.getEmail()).isPresent()) {
@@ -66,12 +70,11 @@ public class UtilisateurServiceImpl implements UtilisateurService,UserDetailsSer
 	    }
 
 	    // Modifier le mot de passe
-	    utilisateur.setMotDePasse(bCryptPasswordEncoder.encode(utilisateur.getMotDePasse()));
+	    utilisateur.setPassword(bCryptPasswordEncoder.encode(utilisateur.getPassword()));
+
 
 	    // Attribuer un rôle par défaut à l'utilisateur
-	    Role userRole = roleRep.findByName(ERole.ROLE_USER)
-	            .orElseThrow(() -> new RuntimeException("Erreur : Rôle non trouvé."));
-	    utilisateur.setRoles(new ArrayList<>(Collections.singleton(userRole)));
+	    utilisateur.setRole(Role.ROLE_USER);
 
 	    // Sauvegarder l'utilisateur
 	    Utilisateur savedUtilisateur = utilisateurRepository.save(utilisateur);
@@ -80,7 +83,7 @@ public class UtilisateurServiceImpl implements UtilisateurService,UserDetailsSer
 	    Session newSession = new Session();
 
 	    // Définir le nom de la session avec le prénom de l'utilisateur
-	    newSession.setNomSession(savedUtilisateur.getPrenomUtilisateur());
+	    newSession.setNomSession(savedUtilisateur.getFirstName());
 
 	    // Associer la session à l'utilisateur sauvegardé
 	    newSession.setUtilisateur(savedUtilisateur);
@@ -89,7 +92,7 @@ public class UtilisateurServiceImpl implements UtilisateurService,UserDetailsSer
 	    sessionRepository.save(newSession);
 
 	    // Convertir l'entité utilisateur en DTO pour le retour
-	    return convertEntityToDto(savedUtilisateur);
+	    return savedUtilisateur;
 	}
 //    @Override
 //    public UtilisateurDTO saveUtilisateur(UtilisateurDTO u) {
@@ -148,16 +151,16 @@ public class UtilisateurServiceImpl implements UtilisateurService,UserDetailsSer
 	@Override
 	public List<Utilisateur> findByNomUtilisateur(String nom) {
 		// TODO Auto-generated method stub
-		return utilisateurRepository.findByNomUtilisateur(nom);
+		return utilisateurRepository.findByLastName(nom);
 	}
 	@Override
 	public List<Utilisateur> findByNomUtilisateurContains(String nom) {
-		return utilisateurRepository.findByNomUtilisateurContains(nom);
+		return utilisateurRepository.findByLastNameContains(nom);
 	}
 	@Override
 	public List<Utilisateur> findByOrderByNomUtilisateurAsc() {
 		// TODO Auto-generated method stub
-		return utilisateurRepository.findByOrderByNomUtilisateurAsc();
+		return utilisateurRepository.findByOrderByLastNameAsc();
 	}
 	
 	@Override

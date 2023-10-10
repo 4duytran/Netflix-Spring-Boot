@@ -43,12 +43,17 @@ public class ListeServiceImpl implements ListeService{
 			.collect(Collectors.toList());
 	}
 	@Override
+	public Optional<Maliste> findByIdFilm(Long idFilm) {
+	    return malisteRepository.findByIdFilm(idFilm);
+	}
+	@Override
 	public void deleteFilmByIdFilm(Long idFilm) {
 		Optional<Maliste> liste = malisteRepository.findByIdFilm(idFilm);
 	    if (liste.isPresent()) {
 	        malisteRepository.delete(liste.get());
 	    }
 	}
+
 	
 	@Override
 	public ListeDTO convertEntityToDto(Maliste liste) {

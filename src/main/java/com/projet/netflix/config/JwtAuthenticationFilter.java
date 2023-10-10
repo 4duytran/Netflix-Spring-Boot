@@ -1,54 +1,64 @@
 package com.projet.netflix.config;
 
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import java.io.IOException;
+
+
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.stereotype.Component;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import com.projet.netflix.service.JwtService;
+import com.projet.netflix.service.UtilisateurService;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.stereotype.Component;
-
-import java.io.IOException;
-import java.util.Date;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
-public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
+@RequiredArgsConstructor
+@Slf4j
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
+  
+  private final JwtService jwtService;
+  private final UtilisateurService userService;
 
-	@Autowired //Test : The dependencies of some of the beans in the application context form a cycle:
-    private final AuthenticationManager authenticationManager;
-    
-//    @Value("${app.jwtSecret}")
-//    private String jwtSecret;
-
-    public JwtAuthenticationFilter(AuthenticationManager authenticationManager) {
-        this.authenticationManager = authenticationManager;
-    }
-
-    @Override
-    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
-        String username = request.getParameter("email");
-        String password = request.getParameter("password");
-
-        return authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
-    }
-
-    @Override
-    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
-        String token = Jwts.builder()
-                .setSubject(((User) authResult.getPrincipal()).getUsername())
-                .setExpiration(new Date(System.currentTimeMillis() + 864_000_000)) // 10 days
-                .signWith(SignatureAlgorithm.HS512, SecurityParams.SECRET.getBytes())
-                .compact();
-
-        response.addHeader("Authorization", "Bearer " + token);
-    }
+  @Override
+  protected void doFilterInternal(HttpServletRequest request,
+        HttpServletResponse response, 
+        FilterChain filterChain)
+        throws ServletException, IOException {
+      final String authHeader = request.getHeader("Authorization");
+      final String jwt;
+      final String userEmail;
+      if (StringUtils.isEmpty(authHeader) || !StringUtils.startsWith(authHeader, "Bearer ")) {
+          filterChain.doFilter(request, response);
+          return;
+      }
+      jwt = authHeader.substring(7);
+      log.debug("JWT - {}", jwt.toString());
+      userEmail = jwtService.extractUserName(jwt);
+      if (StringUtils.isNotEmpty(userEmail) && SecurityContextHolder.getContext().getAuthentication() == null) {
+          UserDetails userDetails = userService.userDetailsService().loadUserByUsername(userEmail);
+          if (jwtService.isTokenValid(jwt, userDetails)) {
+            log.debug("User - {}", userDetails);
+            SecurityContext context = SecurityContextHolder.createEmptyContext();
+            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                    userDetails, null, userDetails.getAuthorities());
+            authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+            context.setAuthentication(authToken);
+            SecurityContextHolder.setContext(context);
+          }
+      }
+      filterChain.doFilter(request, response);
+  }
 }

@@ -16,8 +16,8 @@ import lombok.NoArgsConstructor;
 public class UtilisateurDTO {
 	private Long idUser;
 	private String emailUser;
-	private String nomUser;
-	private String prenomUser;
+	private String LastNameUser;
+	private String FirstNameUser;
 	private String passwordUser;
 	private String confirmPasswordUser;
 	

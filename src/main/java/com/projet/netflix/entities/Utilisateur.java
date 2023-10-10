@@ -3,6 +3,7 @@ package com.projet.netflix.entities;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.security.core.GrantedAuthority;
@@ -12,7 +13,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -24,7 +29,10 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Transient;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -33,9 +41,11 @@ import lombok.ToString;
 
 @Entity
 //Lombok
+@Builder
 @Getter
 @Setter
-//@NoArgsConstructor
+@NoArgsConstructor
+@AllArgsConstructor
 @RequiredArgsConstructor
 @ToString
 public class Utilisateur implements UserDetails, Serializable{
@@ -53,27 +63,25 @@ public class Utilisateur implements UserDetails, Serializable{
 		    @NonNull // Lombok
 		    // Contraintes de taille
 		    @Size(min = 6, max = 32)
-		    private String nomUtilisateur;
+		    private String lastName;
 		    
 		    @NonNull // Lombok
 		    // Contraintes de taille
 		    @Size(min = 6, max = 32)
-		    private String prenomUtilisateur;
+		    private String firstName;
 
 		    @NonNull // Lombok
-		    private String motDePasse;
+		    private String password;
 
 		    @Transient // Non enregistré dans la BD
-		    private String confirmationMotDePasse;
+		    private String passwordConfirm;
 
 		    @NonNull // Lombok
-		    private Short age;
+		    private String age;
 		    
-		    @ManyToMany(cascade=CascadeType.ALL, fetch = FetchType.EAGER)
-		    @JoinTable(name="user_role",joinColumns = @JoinColumn(name="user_id") ,
-		     inverseJoinColumns = @JoinColumn(name="role_id"))
-		    private List<Role> roles; 
-		    
+		    @NonNull
+		    @Enumerated(EnumType.STRING)
+		    private Role role;
 		    
 		    @OneToMany (mappedBy = "utilisateur")
 			@JsonIgnore //éviter la bloucle infini
@@ -86,7 +94,7 @@ public class Utilisateur implements UserDetails, Serializable{
 		    
 		    @Override
 		    public String getPassword() {
-		        return motDePasse;
+		        return password;
 		    }
 
 		    @Override
@@ -116,15 +124,10 @@ public class Utilisateur implements UserDetails, Serializable{
 		    
 		    @Override
 		    public Collection<? extends GrantedAuthority> getAuthorities() {
-		        return roles.stream()
-		                    .map(role -> new SimpleGrantedAuthority(role.getName().name()))
-		                    .collect(Collectors.toList());
+		        return List.of(new SimpleGrantedAuthority(role.name()));
 		    }
 		    
 		    
-	public Utilisateur() {
-		super();
-		// TODO Auto-generated constructor stub
-	}
+
 
 }

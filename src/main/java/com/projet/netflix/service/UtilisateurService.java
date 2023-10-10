@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.data.repository.query.Param;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 
 import com.projet.netflix.dto.UtilisateurDTO;
@@ -13,8 +14,9 @@ import com.projet.netflix.entities.Utilisateur;
 
 public interface UtilisateurService {
 	
+	UserDetailsService userDetailsService();
 	UserDetails loadUserByUsername(String email);
-	UtilisateurDTO saveUtilisateur(UtilisateurDTO u);
+	Utilisateur saveUtilisateur(Utilisateur u);
 	UtilisateurDTO getUtilisateur(Long id);
 	List<UtilisateurDTO> getAllUtilisateurs();
 	

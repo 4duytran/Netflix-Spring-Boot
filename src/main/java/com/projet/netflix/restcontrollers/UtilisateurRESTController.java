@@ -13,8 +13,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.projet.netflix.dto.JwtAuthenticationResponse;
+import com.projet.netflix.dto.SignInRequest;
+import com.projet.netflix.dto.SignUpRequest;
 import com.projet.netflix.dto.UtilisateurDTO;
 import com.projet.netflix.entities.Utilisateur;
+import com.projet.netflix.service.AuthenticationService;
 import com.projet.netflix.service.UtilisateurService;
 
 
@@ -23,20 +27,32 @@ import com.projet.netflix.service.UtilisateurService;
 @CrossOrigin(origins = "http://localhost:4200")
 
 public class UtilisateurRESTController {
+	@Autowired
+    AuthenticationService authenticationService;
 	
 	@Autowired
 	UtilisateurService utilisateurService;
 
 	
     @PostMapping("/signup")
-    public ResponseEntity<UtilisateurDTO> registerUser(@RequestBody UtilisateurDTO utilisateurDTO) {
-        try {
-            UtilisateurDTO savedUser = utilisateurService.saveUtilisateur(utilisateurDTO);
-            return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
-        } catch (Exception e) {
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+    public JwtAuthenticationResponse signup(@RequestBody SignUpRequest request) {
+        return authenticationService.signup(request);
     }
+
+    @PostMapping("/signin")
+    public JwtAuthenticationResponse signin(@RequestBody SignInRequest request) {
+        return authenticationService.signin(request);
+    }
+	
+//    @PostMapping("/signup")
+//    public ResponseEntity<Utilisateur> registerUser(@RequestBody Utilisateur utilisateur) {
+//        try {
+//            Utilisateur savedUser = utilisateurService.saveUtilisateur(utilisateur);//utilisateurDTO
+//            return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
+//        } catch (Exception e) {
+//            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+//        }
+//    }
 
 	
 	@RequestMapping(method=RequestMethod.GET)
@@ -52,9 +68,9 @@ public class UtilisateurRESTController {
 	 }
 	
 	@RequestMapping(method = RequestMethod.POST)
-	public UtilisateurDTO createUtilisateur(@RequestBody UtilisateurDTO utilisateurDTO) 
+	public Utilisateur createUtilisateur(@RequestBody Utilisateur utilisateur) //utilisateurDTO
 	{
-	return utilisateurService.saveUtilisateur(utilisateurDTO);
+	return utilisateurService.saveUtilisateur(utilisateur);//utilisateurDTO
 	}
 	
 	@RequestMapping(method = RequestMethod.PUT)
