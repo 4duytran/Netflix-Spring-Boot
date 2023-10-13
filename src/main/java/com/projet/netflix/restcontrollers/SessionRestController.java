@@ -13,7 +13,7 @@ import com.projet.netflix.entities.Session;
 import com.projet.netflix.service.SessionService;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:4200/") 
+@CrossOrigin(origins = "*")
 public class SessionRestController {
 	
 	@Autowired // fait pour L'injection de dépandances -> ici c'est pour generer une instance demandder a gpt pour plus de details (c'est pas assez)

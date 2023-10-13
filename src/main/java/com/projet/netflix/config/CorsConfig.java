@@ -12,7 +12,7 @@ public class CorsConfig implements WebMvcConfigurer {
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/rest/**")
                 .allowedMethods("*")
-                .allowedOrigins("http://localhost:4200"); // Remplacez par l'URL de votre application Angular
+                .allowedOrigins("*"); // Remplacez par l'URL de votre application Angular
     }
 }
 

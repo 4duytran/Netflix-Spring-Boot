@@ -3,6 +3,8 @@ package com.projet.netflix.service;
 import java.util.Set;
 import java.util.HashSet;
 
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -16,16 +18,16 @@ import com.projet.netflix.entities.Utilisateur;
 import com.projet.netflix.repos.UtilisateurRepository;
 
 @Service
+@RequiredArgsConstructor
 public class AuthenticationService {
 
-	private UtilisateurRepository userRepository;
-	  private UtilisateurService userService;
-	  private PasswordEncoder passwordEncoder;
-	  private JwtService jwtService;
-	  private AuthenticationManager authenticationManager;
+	private final UtilisateurRepository userRepository;
+	private final UtilisateurService userService;
+	private final PasswordEncoder passwordEncoder;
+	private final JwtService jwtService;
+	private final AuthenticationManager authenticationManager;
 
-	  public JwtAuthenticationResponse signup(SignUpRequest request) {
-		  
+	  	public JwtAuthenticationResponse signup(SignUpRequest request) {
 
 	      var user = Utilisateur
 	                  .builder()

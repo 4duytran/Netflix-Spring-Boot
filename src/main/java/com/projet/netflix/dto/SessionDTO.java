@@ -16,6 +16,5 @@ public class SessionDTO {
 
 	private Long idSession;
 	private String nomSession;
-	
 	private Utilisateur utilisateur;
 }
